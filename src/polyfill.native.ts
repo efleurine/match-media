@@ -1,6 +1,6 @@
 import { Subscription } from "@unimodules/core";
 import mediaQuery from "css-mediaquery";
-import { ScreenOrientation } from "expo";
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { Dimensions } from "react-native";
 
 type Listener = (context: MediaQuery) => any;
@@ -9,14 +9,14 @@ class MediaQuery {
   private listeners: Listener[] = [];
 
   private orientation: ScreenOrientation.Orientation =
-    ScreenOrientation.Orientation.PORTRAIT;
+    ScreenOrientation.Orientation.PORTRAIT_UP;
 
   private unsubscribe: Subscription;
 
   constructor(private query: string) {
     // @ts-ignore
     (async () => {
-      const { orientation } = await ScreenOrientation.getOrientationAsync();
+      const  orientation  = await ScreenOrientation.getOrientationAsync();
       this.updateListeners({ orientation });
     })();
 
@@ -50,9 +50,12 @@ class MediaQuery {
   // @ts-ignore
   public get matches(): boolean {
     const windowDimensions = Dimensions.get("window");
+    const { Orientation }= ScreenOrientation
+    const isLandscape = this.orientation === Orientation.LANDSCAPE_LEFT || this.orientation === Orientation.LANDSCAPE_RIGHT
+
     return mediaQuery.match(this.query, {
       type: "screen",
-      orientation: this.orientation.toLowerCase(),
+      orientation: isLandscape ? 'landscape' : 'portrait',
       ...windowDimensions,
       "device-width": windowDimensions.width,
       "device-height": windowDimensions.height
